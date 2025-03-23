@@ -1,1 +1,1 @@
-# -WHS-secure-coding
+# WHS-secure-coding

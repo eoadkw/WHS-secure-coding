@@ -55,3 +55,24 @@ class ProductListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user)
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_like(request, pk):
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({'error': '상품이 존재하지 않습니다'}, status=404)
+
+    user = request.user
+    if user in product.likes.all():
+        product.likes.remove(user)
+        return Response({'message': '찜 취소됨'})
+    else:
+        product.likes.add(user)
+        return Response({'message': '찜 추가됨'})
+
+

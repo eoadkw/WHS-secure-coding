@@ -13,4 +13,8 @@ urlpatterns = [
     path('<int:pk>/', ProductDetailView.as_view(), name='product-detail'),
 ]
 
+from .views import toggle_like
 
+urlpatterns += [
+    path('<int:pk>/like/', toggle_like, name='toggle-like'),
+]

@@ -25,3 +25,19 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+class ProductReport(models.Model):
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reports'
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='reports'
+    )
+    reason = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('reporter', 'product')  # 동일 유저는 같은 상품 중복 신고 불가
+
+    def __str__(self):
+        return f'{self.reporter} → {self.product}'
+

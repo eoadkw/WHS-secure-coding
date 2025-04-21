@@ -18,3 +18,10 @@ from .views import toggle_like
 urlpatterns += [
     path('<int:pk>/like/', toggle_like, name='toggle-like'),
 ]
+
+from .views import report_product
+
+urlpatterns += [
+    path('<int:pk>/report/', report_product, name='report-product'),
+]
+

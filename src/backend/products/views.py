@@ -75,4 +75,27 @@ def toggle_like(request, pk):
         product.likes.add(user)
         return Response({'message': '찜 추가됨'})
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import ProductReport
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def report_product(request, pk):
+    user = request.user
+    reason = request.data.get('reason', '')
+    
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({'error': '상품이 존재하지 않습니다'}, status=404)
+
+    # 이미 신고한 경우 방지
+    if ProductReport.objects.filter(reporter=user, product=product).exists():
+        return Response({'message': '이미 신고한 상품입니다'}, status=400)
+
+    ProductReport.objects.create(reporter=user, product=product, reason=reason)
+    return Response({'message': '신고가 접수되었습니다'}, status=status.HTTP_201_CREATED)
 

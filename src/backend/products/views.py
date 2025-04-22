@@ -78,3 +78,25 @@ def get_queryset(self):
         return queryset.filter(likes=self.request.user)
     return queryset
 
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import ProductReport
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_reports(request):
+    user = request.user
+    reports = ProductReport.objects.filter(reporter=user)
+    data = [
+        {
+            'id': report.id,
+            'product_title': report.product.title,
+            'reason': report.reason,
+            'created_at': report.created_at
+        }
+        for report in reports
+    ]
+    return Response(data)
+

@@ -70,3 +70,11 @@ def report_product(request, pk):
 
     return Response({'message': '신고가 접수되었습니다'}, status=status.HTTP_201_CREATED)
 
+def get_queryset(self):
+    queryset = Product.objects.filter(is_active=True).order_by('-created_at')
+    liked = self.request.query_params.get('liked')
+
+    if liked == 'true' and self.request.user.is_authenticated:
+        return queryset.filter(likes=self.request.user)
+    return queryset
+

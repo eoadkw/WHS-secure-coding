@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProductListPage from './pages/ProductListPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CreateProductPage from './pages/CreateProductPage';
+import WishlistPage from './pages/WishlistPage';
 import ReportPage from './pages/ReportPage';
-import Layout from './components/Layout';
 
 function App() {
   return (
@@ -11,7 +14,10 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="products" element={<ProductListPage />} />
-          <Route path="report" element={<ReportPage />} />
+          <Route path="products/:id" element={<ProductDetailPage />} />
+          <Route path="create" element={<CreateProductPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="reports" element={<ReportPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
@@ -19,4 +25,3 @@ function App() {
 }
 
 export default App;
-

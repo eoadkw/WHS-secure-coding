@@ -1,14 +1,18 @@
 from django.contrib import admin
-from .models import Product, ProductReport
+from .models import Product, Report
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display  = ['id', 'seller', 'title', 'price', 'status', 'created_at']
-    list_filter   = ['status', 'seller']
+    list_display = ['id', 'title', 'price', 'owner', 'created_at']
+    list_filter = ['created_at', 'owner']
     search_fields = ['title', 'description']
+    ordering = ['-created_at']
 
-@admin.register(ProductReport)
-class ProductReportAdmin(admin.ModelAdmin):
-    list_display = ['id', 'reporter', 'product', 'reason', 'created_at']
-    list_filter  = ['product', 'reporter']
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ['id', 'reporter', 'product', 'created_at']
+    list_filter = ['created_at', 'reporter']
+    search_fields = ['reason']
+    ordering = ['-created_at']
 

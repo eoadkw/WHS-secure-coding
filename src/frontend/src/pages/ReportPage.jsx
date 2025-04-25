@@ -1,22 +1,21 @@
-import {useEffect,useState} from 'react';
+import { useState, useEffect } from 'react';
 import api from '../api/axios';
-import {Link} from 'react-router-dom';
 
-export default function ReportPage(){
-  const [reports,setReports]=useState([]);
-  useEffect(()=>{
-    api.get('/products/reports/')
-      .then(res=>setReports(res.data))
-      .catch(err=>console.error(err));
-  },[]);
+export default function ReportPage() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    api.get('/api/products/?reported=true', { withCredentials: true })
+       .then(res => setProducts(res.data))
+       .catch(console.error);
+  }, []);
+
   return (
-    <div style={{padding:'1rem'}}>
+    <div>
       <h2>신고한 상품 목록</h2>
       <ul>
-        {reports.map(r=>(
-          <li key={r.id}>
-            <Link to={`/products/${r.product}`}>{r.product} – {r.reason}</Link>
-          </li>
+        {products.map(p => (
+          <li key={p.id}>{p.title} – {p.price}원</li>
         ))}
       </ul>
     </div>

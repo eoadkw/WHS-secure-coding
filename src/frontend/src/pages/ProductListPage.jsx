@@ -1,25 +1,20 @@
-import {useEffect,useState} from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import {Link} from 'react-router-dom';
+import ProductCard from '../components/ProductCard';
 
-export default function ProductListPage(){
-  const [products,setProducts]=useState([]);
-  useEffect(()=>{
-    api.get('/products/').then(res=>setProducts(res.data))
-      .catch(err=>console.error(err));
-  },[]);
+export default function ProductListPage() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    api.get('/products').then(r => setProducts(r.data));
+  }, []);
+
   return (
-    <div style={{padding:'1rem'}}>
+    <div className="page-container">
       <h2>상품 목록</h2>
-      <ul>
-        {products.map(p=>(
-          <li key={p.id}>
-            <Link to={`/products/${p.id}`}>
-              {p.title} – {p.price}원
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="grid">
+        {products.map(p => <ProductCard key={p.id} product={p} />)}
+      </div>
     </div>
   );
 }

@@ -1,28 +1,26 @@
-import { useEffect, useState } from 'react';
+import {useEffect,useState} from 'react';
 import api from '../api/axios';
+import {Link} from 'react-router-dom';
 
-function ProductListPage() {
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    api.get('products/')
-      .then(response => setProducts(response.data))
-      .catch(error => console.error('상품 목록 불러오기 실패:', error));
-  }, []);
-
+export default function ProductListPage(){
+  const [products,setProducts]=useState([]);
+  useEffect(()=>{
+    api.get('/products/').then(res=>setProducts(res.data))
+      .catch(err=>console.error(err));
+  },[]);
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{padding:'1rem'}}>
       <h2>상품 목록</h2>
       <ul>
-        {products.map(product => (
-          <li key={product.id}>
-            <strong>{product.title}</strong> - {product.price}원
+        {products.map(p=>(
+          <li key={p.id}>
+            <Link to={`/products/${p.id}`}>
+              {p.title} – {p.price}원
+            </Link>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-export default ProductListPage;
 

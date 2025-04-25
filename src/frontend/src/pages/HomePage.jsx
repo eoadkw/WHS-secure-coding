@@ -1,12 +1,9 @@
-// src/pages/HomePage.jsx
-function HomePage() {
+export default function HomePage(){
   return (
-    <div>
-      <h1>홈 페이지</h1>
-      <p>여기가 프론트엔드의 시작점입니다!</p>
+    <div style={{padding:'1rem'}}>
+      <h2>홈페이지</h2>
+      <p>프론트엔드 시작점입니다!</p>
     </div>
   );
 }
-
-export default HomePage;
 

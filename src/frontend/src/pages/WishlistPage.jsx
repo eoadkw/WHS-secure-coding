@@ -1,32 +1,25 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {useEffect,useState} from 'react';
+import api from '../api/axios';
+import {Link} from 'react-router-dom';
 
-function WishlistPage() {
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    axios.get("http://localhost:8000/api/products/?liked=true", { withCredentials: true })
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => {
-        console.error("찜한 상품 목록 가져오기 실패:", error);
-      });
-  }, []);
-
+export default function WishlistPage(){
+  const [products,setProducts]=useState([]);
+  useEffect(()=>{
+    api.get('/products/?liked=true')
+      .then(res=>setProducts(res.data))
+      .catch(err=>console.error(err));
+  },[]);
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{padding:'1rem'}}>
       <h2>찜한 상품 목록</h2>
       <ul>
-        {products.map((product) => (
-          <li key={product.id}>
-            <strong>{product.title}</strong> - {product.price}원
+        {products.map(p=>(
+          <li key={p.id}>
+            <Link to={`/products/${p.id}`}>{p.title} – {p.price}원</Link>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-export default WishlistPage;
 

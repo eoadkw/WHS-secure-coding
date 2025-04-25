@@ -1,28 +1,24 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import {useEffect,useState} from 'react';
+import {useParams} from 'react-router-dom';
+import api from '../api/axios';
 
-function ProductDetailPage() {
-  const { id } = useParams();
-  const [product, setProduct] = useState(null);
-
-  useEffect(() => {
-    axios.get(`http://localhost:8000/api/products/${id}/`)
-      .then(res => setProduct(res.data))
-      .catch(err => console.error('상세 조회 실패:', err));
-  }, [id]);
-
-  if (!product) return <p>로딩 중...</p>;
-
+export default function ProductDetailPage(){
+  const {id}=useParams();
+  const [product,setProduct]=useState(null);
+  useEffect(()=>{
+    api.get(`/products/${id}/`)
+      .then(res=>setProduct(res.data))
+      .catch(err=>console.error(err));
+  },[id]);
+  if(!product) return <p style={{padding:'1rem'}}>로딩 중…</p>;
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{padding:'1rem'}}>
       <h2>{product.title}</h2>
-      <p><strong>가격:</strong> {product.price}</p>
-      <p><strong>설명:</strong> {product.description}</p>
-      <p><strong>등록일:</strong> {new Date(product.created_at).toLocaleString()}</p>
+      <p>{product.description}</p>
+      <p>가격: {product.price}원</p>
+      <p>작성자: {product.seller_username}</p>
+      <p>찜 {product.likes_count}회 · 신고 {product.reports_count}회</p>
     </div>
   );
 }
-
-export default ProductDetailPage;
 

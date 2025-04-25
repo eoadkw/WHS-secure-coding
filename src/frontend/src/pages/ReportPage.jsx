@@ -1,35 +1,25 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import {useEffect,useState} from 'react';
+import api from '../api/axios';
+import {Link} from 'react-router-dom';
 
-function ReportPage() {
-  const [reports, setReports] = useState([]);
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/products/reports/", {
-        withCredentials: true,
-      })
-      .then((response) => {
-        setReports(response.data);
-      })
-      .catch((error) => {
-        console.error("신고한 상품을 가져오지 못했습니다.", error);
-      });
-  }, []);
-
+export default function ReportPage(){
+  const [reports,setReports]=useState([]);
+  useEffect(()=>{
+    api.get('/products/reports/')
+      .then(res=>setReports(res.data))
+      .catch(err=>console.error(err));
+  },[]);
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{padding:'1rem'}}>
       <h2>신고한 상품 목록</h2>
       <ul>
-        {reports.map((report) => (
-          <li key={report.id}>
-            <strong>{report.product_title}</strong> - 사유: {report.reason}
+        {reports.map(r=>(
+          <li key={r.id}>
+            <Link to={`/products/${r.product}`}>{r.product} – {r.reason}</Link>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-export default ReportPage;
 

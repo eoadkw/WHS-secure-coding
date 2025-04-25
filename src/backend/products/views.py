@@ -1,102 +1,69 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import status, generics, filters
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-
 from .models import Product, ProductReport
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, ProductReportSerializer
 
-
-# 상품 목록 조회 및 생성
 class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.filter(is_active=True).order_by('-created_at')
-    serializer_class = ProductSerializer
+    serializer_class   = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends    = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields      = ['title','description']
+    ordering_fields    = ['created_at','price']
 
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['price', 'seller', 'status']
-    search_fields = ['title', 'description']
-    ordering_fields = ['created_at', 'price']
+    def get_queryset(self):
+        qs = Product.objects.all()
+        user     = self.request.user
+        liked    = self.request.query_params.get('liked')
+        reported = self.request.query_params.get('reported')
+        if liked == 'true' and user.is_authenticated:
+            qs = qs.filter(likes=user)
+        if reported == 'true' and user.is_authenticated:
+            qs = qs.filter(reports__reporter=user)
+        return qs.order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user)
 
-
-# 상품 상세 조회, 수정, 삭제
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    queryset          = Product.objects.all()
+    serializer_class  = ProductSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+        if self.request.method in ['PUT','PATCH','DELETE']:
             return [IsAuthenticated()]
-        return []
+        return super().get_permissions()
 
-
-# 찜 토글
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggle_like(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    product = Product.objects.filter(pk=pk).first()
+    if not product: return Response({'error':'없음'}, status=404)
     user = request.user
-
     if user in product.likes.all():
-        product.likes.remove(user)
-        return Response({'message': '찜 취소됨'})
-    else:
-        product.likes.add(user)
-        return Response({'message': '찜 추가됨'})
+        product.likes.remove(user); return Response({'message':'찜취소'})
+    product.likes.add(user); return Response({'message':'찜추가'})
 
-
-# 상품 신고
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def report_product(request, pk):
-    user = request.user
-    reason = request.data.get('reason', '')
-    product = get_object_or_404(Product, pk=pk)
+    product = Product.objects.filter(pk=pk).first()
+    if not product: return Response({'error':'없음'}, status=404)
+    if ProductReport.objects.filter(reporter=request.user, product=product).exists():
+        return Response({'message':'이미신고'}, status=400)
+    ProductReport.objects.create(
+        reporter=request.user,
+        product=product,
+        reason=request.data.get('reason','')
+    )
+    return Response({'message':'신고완료'}, status=status.HTTP_201_CREATED)
 
-    if ProductReport.objects.filter(reporter=user, product=product).exists():
-        return Response({'message': '이미 신고한 상품입니다'}, status=400)
-
-    ProductReport.objects.create(reporter=user, product=product, reason=reason)
-
-    if product.reports.count() > 3:
-        product.is_active = False
-        product.save()
-
-    return Response({'message': '신고가 접수되었습니다'}, status=status.HTTP_201_CREATED)
-
-def get_queryset(self):
-    queryset = Product.objects.filter(is_active=True).order_by('-created_at')
-    liked = self.request.query_params.get('liked')
-
-    if liked == 'true' and self.request.user.is_authenticated:
-        return queryset.filter(likes=self.request.user)
-    return queryset
-
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import ProductReport
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_reports(request):
-    user = request.user
-    reports = ProductReport.objects.filter(reporter=user)
-    data = [
-        {
-            'id': report.id,
-            'product_title': report.product.title,
-            'reason': report.reason,
-            'created_at': report.created_at
-        }
-        for report in reports
-    ]
-    return Response(data)
+class ReportListView(generics.ListAPIView):
+    serializer_class   = ProductReportSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        return ProductReport.objects.filter(reporter=self.request.user).order_by('-created_at')
 
